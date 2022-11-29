@@ -8,17 +8,17 @@ const makeMessage = (type, payload) => {
   return JSON.stringify(message);
 };
 
-messageForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  const input = messageForm.querySelector("input");
-  socket.send(makeMessage("new_message", input.value));
-  input.value = "";
-});
-
 nicknameForm.addEventListener("submit", (event) => {
   event.preventDefault();
   const input = nicknameForm.querySelector("input");
   socket.send(makeMessage("nickname", input.value));
+  input.value = "";
+});
+
+messageForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const input = messageForm.querySelector("input");
+  socket.send(makeMessage("new_message", input.value));
   input.value = "";
 });
 
