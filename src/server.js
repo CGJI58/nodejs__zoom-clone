@@ -20,8 +20,8 @@ wss.on("connection", (socket) => {
   console.log("Connected to Browser ✅");
   socket.on("close", () => console.log("Disconnected from Browser ❌"));
   sockets.push(socket);
-  socket.on("message", (message, isBinary) => {
-    message = isBinary ? message : message.toString();
+  socket.on("message", (message) => {
+    message = message.toString("utf8");
     sockets.forEach((aSocket) => aSocket.send(message));
   });
 });
