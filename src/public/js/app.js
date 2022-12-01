@@ -1,37 +1,50 @@
-const messageList = document.querySelector("ul");
-const nicknameForm = document.querySelector("#nicknameForm");
-const messageForm = document.querySelector("#messageForm");
-const socket = new WebSocket(`ws://${window.location.host}`);
+const socket = io();
 
-const makeMessage = (type, payload) => {
-  const message = { type, payload };
-  return JSON.stringify(message);
-};
+const welcome = document.getElementById("welcome");
+const form = welcome.querySelector("form");
+const room = document.getElementById("room");
 
-nicknameForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  const input = nicknameForm.querySelector("input");
-  socket.send(makeMessage("nickname", input.value));
-  input.value = "";
-});
+room.hidden = true;
+let roomName;
 
-messageForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  const input = messageForm.querySelector("input");
-  socket.send(makeMessage("new_message", input.value));
-  input.value = "";
-});
-
-socket.addEventListener("open", () => {
-  console.log("Connected to Server ✅");
-});
-
-socket.addEventListener("message", (message) => {
+function addMessage(message) {
+  const ul = room.querySelector("ul");
   const li = document.createElement("li");
-  li.innerText = message.data;
-  messageList.append(li);
+  li.innerText = message;
+  ul.appendChild(li);
+}
+
+function handleMessageSubmit(event) {
+  event.preventDefault();
+  const input = room.querySelector("input");
+  socket.emit("new_message", input.value, roomName, () => {
+    addMessage(`You: ${input.value}`);
+  });
+}
+
+function showRoom() {
+  welcome.hidden = true;
+  room.hidden = false;
+  const h3 = room.querySelector("h3");
+  h3.innerText = roomName;
+  const form = room.querySelector("form");
+  form.addEventListener("submit", handleMessageSubmit);
+}
+
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const input = form.querySelector("input");
+  socket.emit("enter_room", input.value, showRoom);
+  roomName = input.value;
+  input.value = "";
 });
 
-socket.addEventListener("close", () => {
-  console.log("Disconnected from Server ❌");
+socket.on("welcome", () => {
+  addMessage("someone joined!");
 });
+
+socket.on("bye", () => {
+  addMessage("Someone left.");
+});
+
+socket.on("new_message", addMessage);
